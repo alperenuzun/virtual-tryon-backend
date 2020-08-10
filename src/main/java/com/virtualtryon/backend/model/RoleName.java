@@ -1,4 +1,4 @@
-package com.init.demo.entity;
+package com.virtualtryon.backend.model;
 
 public enum RoleName {
     ROLE_USER,

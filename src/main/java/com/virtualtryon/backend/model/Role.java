@@ -1,4 +1,4 @@
-package com.init.demo.entity;
+package com.virtualtryon.backend.model;
 
 import org.hibernate.annotations.NaturalId;
 import javax.persistence.*;

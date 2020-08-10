@@ -1,4 +1,4 @@
-package com.init.demo.entity;
+package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
