@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "user_coupon")
 public class UserCoupon {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

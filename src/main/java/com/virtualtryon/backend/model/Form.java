@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "forms")
 public class Form {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String form;
 

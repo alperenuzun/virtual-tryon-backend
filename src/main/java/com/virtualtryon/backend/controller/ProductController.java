@@ -38,7 +38,7 @@ public class ProductController {
     @GetMapping("/recommendation/{pId}")
     public ResponseEntity getRecommendations(@PathVariable(name = "pId") Long productId) {
         // TODO: Read all the Id of products from the python file.
-        List<Long> productIds = new ArrayList<Long>();
+        List<Long> productIds = new ArrayList<>();
         productIds.add(3l);
         productIds.add(2l);
         productIds.add(productId);

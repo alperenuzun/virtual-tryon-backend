@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class Brand {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String brandName;
     private Integer importance;
