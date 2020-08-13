@@ -1,20 +1,15 @@
 package com.virtualtryon.backend.controller;
 
-import com.virtualtryon.backend.model.Coupon;
-import com.virtualtryon.backend.model.User;
-import com.virtualtryon.backend.model.UserCoupon;
-import com.virtualtryon.backend.payload.ApiResponse;
-import com.virtualtryon.backend.payload.CheckCouponResponse;
-import com.virtualtryon.backend.payload.CouponResponse;
-import com.virtualtryon.backend.repository.CouponRepository;
-import com.virtualtryon.backend.repository.SalesRepository;
-import com.virtualtryon.backend.repository.UserCouponRepository;
-import com.virtualtryon.backend.repository.UserRepository;
+import com.virtualtryon.backend.model.*;
+import com.virtualtryon.backend.payload.*;
+import com.virtualtryon.backend.repository.*;
 import com.virtualtryon.backend.security.CurrentUser;
 import com.virtualtryon.backend.security.UserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,11 +25,70 @@ public class SalesController {
 
     private final UserRepository userRepository;
 
-    public SalesController(CouponRepository couponRepository, SalesRepository salesRepository, UserCouponRepository userCouponRepository, UserRepository userRepository) {
+    private final ProductRepository productRepository;
+
+    private final SalesDetailRepository salesDetailRepository;
+
+    public SalesController(CouponRepository couponRepository, SalesRepository salesRepository, UserCouponRepository userCouponRepository, UserRepository userRepository, ProductRepository productRepository, SalesDetailRepository salesDetailRepository) {
         this.couponRepository = couponRepository;
         this.salesRepository = salesRepository;
         this.userCouponRepository = userCouponRepository;
         this.userRepository = userRepository;
+        this.productRepository = productRepository;
+        this.salesDetailRepository = salesDetailRepository;
+    }
+
+    @PostMapping("/addSales")
+    public ResponseEntity<ApiResponse> addSales(@CurrentUser UserPrincipal currentUser,
+                                                @RequestBody SaleAddRequest saleAddRequest){
+        try{
+            List<SaleRequest> shoppingCart = saleAddRequest.getSalesList();
+            Integer totalCount = 0;
+            String couponCode = "";
+            float totalPrice = 0;
+
+            for(SaleRequest saleRequest : shoppingCart){
+                totalCount += saleRequest.getCount();
+                totalPrice += saleRequest.getPrice();
+                couponCode = saleRequest.getCouponCode();
+            }
+
+            Optional<User> user = userRepository.findById(currentUser.getId());
+            Optional<Coupon> coupon = couponRepository.findByCouponCode(couponCode);
+
+            Instant now = Instant.now();
+            String datetime = now.toString();
+            datetime = datetime.substring(0,datetime.length()-5).replace("T"," ");
+
+            Sale sale = new Sale();
+            sale.setCoupon(coupon.get());
+            sale.setTotalAmount(totalPrice);
+            sale.setTotalQuantity(totalCount);
+            sale.setAds(1);
+            sale.setDatetime(datetime);
+            sale.setUser(user.get());
+
+            Sale newSale = salesRepository.save(sale);
+
+            List<SalesDetail> salesDetails = new ArrayList<>();
+            for(SaleRequest saleRequest : shoppingCart){
+                Optional<Product> product = productRepository.findById(saleRequest.getProductId());
+
+                SalesDetail salesDetail = new SalesDetail();
+                salesDetail.setPrice(saleRequest.getPrice());
+                salesDetail.setProduct(product.get());
+                salesDetail.setQuantity(saleRequest.getCount());
+                salesDetail.setSale(newSale);
+
+                salesDetails.add(salesDetail);
+            }
+
+            salesDetailRepository.saveAll(salesDetails);
+        }catch (Exception e){
+            return ResponseEntity.ok(new ApiResponse(false, "Unable to add"));
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "Successfully added"));
     }
 
     @PostMapping("/addCoupon")
