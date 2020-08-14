@@ -61,7 +61,7 @@ public class SalesController {
             datetime = datetime.substring(0,datetime.length()-5).replace("T"," ");
 
             Sale sale = new Sale();
-            sale.setCoupon(coupon.get());
+            sale.setCoupon(coupon.orElse(null));
             sale.setTotalAmount(totalPrice);
             sale.setTotalQuantity(totalCount);
             sale.setAds(1);
@@ -91,7 +91,7 @@ public class SalesController {
         return ResponseEntity.ok(new ApiResponse(true, "Successfully added"));
     }
 
-    @PostMapping("/addCoupon")
+    @PostMapping("/addCoupon/{code}")
     public ResponseEntity<ApiResponse> addCoupon(@CurrentUser UserPrincipal currentUser,
                                                  @PathVariable(name = "code") String code){
         try{
@@ -115,25 +115,28 @@ public class SalesController {
         return ResponseEntity.ok(new ApiResponse(true, "Successfully added"));
     }
 
-    @GetMapping("/checkCoupon")
+    @GetMapping("/checkCoupon/{code}")
     public ResponseEntity<CheckCouponResponse> checkCoupons(@CurrentUser UserPrincipal currentUser,
                                                             @PathVariable(name = "code") String code) {
-        Boolean couponExists = couponRepository.existsByCouponCode(code);
-        Integer checkUnUsed = userCouponRepository.countByUserAndCouponAndUsed(currentUser.getId(), code);
-
         CheckCouponResponse checkCouponResponse = new CheckCouponResponse();
+        try{
+            Boolean couponExists = couponRepository.existsByCouponCode(code);
+            Integer checkUnUsed = userCouponRepository.countByUserAndCouponAndUsed(currentUser.getId(), code);
 
-        if(couponExists && checkUnUsed > 0){
-            Integer discount = couponRepository.getDiscountByCouponCode(code);
-            userCouponRepository.findByUserAndCoupon(currentUser.getId(), code)
-                    .stream().map(userCoupon -> {
-                        userCoupon.setUsed(1);
-                        return userCouponRepository.save(userCoupon);
-                    }
-            );
+            if(couponExists && checkUnUsed > 0){
+                Integer discount = couponRepository.getDiscountByCouponCode(code);
+                userCouponRepository.findByUserAndCoupon(currentUser.getId(), code)
+                        .stream().map(userCoupon -> {
+                            userCoupon.setUsed(1);
+                            return userCouponRepository.save(userCoupon);
+                        }
+                );
 
-            checkCouponResponse.setDiscount(discount);
-            checkCouponResponse.setSuccess(true);
+                checkCouponResponse.setDiscount(discount);
+                checkCouponResponse.setSuccess(true);
+            }
+        }catch (Exception e){
+            return ResponseEntity.ok(checkCouponResponse);
         }
 
         return ResponseEntity.ok(checkCouponResponse);

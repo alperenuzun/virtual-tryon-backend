@@ -2,7 +2,7 @@ package com.virtualtryon.backend.payload;
 
 public class CheckCouponResponse {
     private Boolean success = false;
-    private Integer discount;
+    private Integer discount = 0;
 
     public Boolean getSuccess() {
         return success;
