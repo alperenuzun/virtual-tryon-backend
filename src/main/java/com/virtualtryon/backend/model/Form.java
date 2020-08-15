@@ -1,6 +1,7 @@
 package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "forms")
@@ -8,6 +9,8 @@ public class Form {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
     private String form;
 
     public Long getId() {

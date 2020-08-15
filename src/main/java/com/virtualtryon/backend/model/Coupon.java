@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 public class Coupon {
@@ -12,8 +13,14 @@ public class Coupon {
     private Long id;
 
     private String couponCode;
+
+    @NotBlank
     private Integer discountPercentage;
+
+    @NotBlank
     private Integer stage;
+
+    @NotBlank
     private String description;
 
     public Long getId() {

@@ -1,6 +1,7 @@
 package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 
 @Entity
@@ -9,27 +10,49 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
     private String name;
+
+    @NotBlank
     private String summary;
+
+    @NotBlank
     private String description;
+
+    @NotBlank
     private String objName;
+
+    @NotBlank
     private String img;
 
     @ManyToOne
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
+
+    @NotBlank
     private String productCode;
+
     private Integer gender;
+
+    @NotBlank
     private BigDecimal price;
+
     private Integer discount;
+
+    @NotBlank
     private Integer modelNo;
 
     @ManyToOne
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
+
     private String size;
+
     private String glassMaterial;
+
     private String frameMaterial;
+
     private Integer polarized;
 
     @ManyToOne

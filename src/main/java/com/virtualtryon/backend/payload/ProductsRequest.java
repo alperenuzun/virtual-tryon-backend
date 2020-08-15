@@ -1,11 +1,18 @@
 package com.virtualtryon.backend.payload;
 
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public class ProductsRequest {
+    @Max(2)
     private Integer gender;
+
+    @NotNull
     private List<Long> brand;
+
+    @NotNull
     private List<Long> color;
 
     public Integer getGender() {

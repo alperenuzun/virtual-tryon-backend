@@ -2,7 +2,9 @@ package com.virtualtryon.backend.payload;
 
 public class CommentAddRequest {
     private Long productId;
+
     private String comment;
+
     private Integer star;
 
     public Long getProductId() {

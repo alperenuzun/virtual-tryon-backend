@@ -1,6 +1,7 @@
 package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "sales_detail")
@@ -16,7 +17,11 @@ public class SalesDetail {
     @ManyToOne
     @JoinColumn(name="product_id", nullable = false)
     private Product product;
+
+    @NotBlank
     private Integer quantity;
+
+    @NotBlank
     private float price;
 
     public Long getId() {

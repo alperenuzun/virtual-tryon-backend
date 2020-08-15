@@ -1,6 +1,7 @@
 package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "comments")
@@ -17,8 +18,13 @@ public class Comment {
     @JoinColumn(name="product_id", nullable = false)
     private Product product;
 
+    @NotBlank
     private String comment;
+
+    @NotBlank
     private String datetime;
+
+    @NotBlank
     private Integer star;
 
     public Long getId() {
