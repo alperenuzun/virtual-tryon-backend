@@ -10,6 +10,7 @@ import com.virtualtryon.backend.repository.ProductRepository;
 import com.virtualtryon.backend.repository.UserRepository;
 import com.virtualtryon.backend.security.CurrentUser;
 import com.virtualtryon.backend.security.UserPrincipal;
+import com.virtualtryon.backend.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,37 +25,16 @@ import java.util.Optional;
 public class CommentController {
 
     @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+    private CommentService commentService;
 
     @GetMapping("/{pId}")
     public ResponseEntity getComments(@PathVariable(name = "pId") Long productId) {
-        return ResponseEntity.ok(commentRepository.findByProduct(productId));
+        return commentService.getComments(productId);
     }
 
     @PostMapping
     public ResponseEntity addComment(@CurrentUser UserPrincipal currentUser,
                                      @Valid @RequestBody CommentAddRequest commentAddRequest){
-        Optional<User> user = userRepository.findById(currentUser.getId());
-        Optional<Product> product = productRepository.findById(commentAddRequest.getProductId());
-
-        Instant now = Instant.now();
-        String datetime = now.toString();
-        datetime = datetime.substring(0,datetime.length()-5).replace("T"," ");
-
-        Comment comment = new Comment();
-        comment.setComment(commentAddRequest.getComment());
-        comment.setStar(commentAddRequest.getStar());
-        comment.setUser(user.get());
-        comment.setProduct(product.get());
-        comment.setDatetime(datetime);
-
-        commentRepository.save(comment);
-        return ResponseEntity.ok(new ApiResponse(true, "Comment Added Successfully"));
+        return commentService.addComment(currentUser, commentAddRequest);
     }
 }
