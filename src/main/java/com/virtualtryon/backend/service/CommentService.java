@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,8 +28,8 @@ public class CommentService {
     @Autowired
     private ProductRepository productRepository;
 
-    public ResponseEntity getComments(Long productId){
-        return ResponseEntity.ok(commentRepository.findByProduct(productId));
+    public List<Comment> getComments(Long productId){
+        return commentRepository.findByProduct(productId);
     }
 
     public ResponseEntity addComment(UserPrincipal currentUser, CommentAddRequest commentAddRequest){
