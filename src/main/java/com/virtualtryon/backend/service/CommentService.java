@@ -32,7 +32,7 @@ public class CommentService {
         return commentRepository.findByProduct(productId);
     }
 
-    public ResponseEntity addComment(UserPrincipal currentUser, CommentAddRequest commentAddRequest){
+    public ResponseEntity<ApiResponse> addComment(UserPrincipal currentUser, CommentAddRequest commentAddRequest){
         Optional<User> user = userRepository.findById(currentUser.getId());
         Optional<Product> product = productRepository.findById(commentAddRequest.getProductId());
 

@@ -2,6 +2,7 @@ package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "comments")
@@ -24,7 +25,7 @@ public class Comment {
     @NotBlank
     private String datetime;
 
-    @NotBlank
+    @NotNull
     private Integer star;
 
     public Long getId() {

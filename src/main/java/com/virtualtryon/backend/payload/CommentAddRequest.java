@@ -19,4 +19,15 @@ public class CommentAddRequest {
         return star;
     }
 
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void setStar(Integer star) {
+        this.star = star;
+    }
 }
