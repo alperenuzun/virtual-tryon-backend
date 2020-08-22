@@ -2,6 +2,7 @@ package com.virtualtryon.backend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.virtualtryon.backend.exception.ApiError;
 import com.virtualtryon.backend.exception.AppException;
 import com.virtualtryon.backend.model.Comment;
 import com.virtualtryon.backend.model.Product;
@@ -28,10 +29,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -127,6 +127,42 @@ class CommentControllerTest {
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void addComment_whenCommentLengthIsMoreThan255Characters_receiveBadRequestAndMessage(){
+        //given
+        String veryLongString = IntStream.rangeClosed(1, 260).mapToObj(i -> "x").collect(Collectors.joining());
+        CommentAddRequest commentAddRequest = TestUtil.createValidAddRequest();
+        commentAddRequest.setComment(veryLongString);
+
+        //when
+        String token = getAuthToken();
+        HttpEntity<CommentAddRequest> request = TestUtil.getHttpEntityByToken(token,commentAddRequest);
+
+        //then
+        ResponseEntity<ApiError> response = testRestTemplate.postForEntity(baseUrl, request, ApiError.class);
+        Map<String, String> validationErrors = response.getBody().getValidationErrors();
+        assertThat(validationErrors.get("comment")).isEqualTo("Comment size should not be more than 255!");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void addComment_whenCommentStarIsInvalid_receiveBadRequestAndMessage(){
+        //given
+        int star = 6;
+        CommentAddRequest commentAddRequest = TestUtil.createValidAddRequest();
+        commentAddRequest.setStar(star);
+
+        //when
+        String token = getAuthToken();
+        HttpEntity<CommentAddRequest> request = TestUtil.getHttpEntityByToken(token,commentAddRequest);
+
+        //then
+        ResponseEntity<ApiError> response = testRestTemplate.postForEntity(baseUrl, request, ApiError.class);
+        Map<String, String> validationErrors = response.getBody().getValidationErrors();
+        assertThat(validationErrors.get("star")).isEqualTo("Star must be between 1 and 5");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     private String getAuthToken() {
