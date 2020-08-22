@@ -1,8 +1,7 @@
 package com.virtualtryon.backend.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 @Entity
 @Table(name = "comments")
@@ -20,12 +19,15 @@ public class Comment {
     private Product product;
 
     @NotBlank
+    @Size(max = 255, message = "Comment size should not be more than 255!")
     private String comment;
 
     @NotBlank
     private String datetime;
 
     @NotNull
+    @Min(value = 1, message = "Star must be between 1 and 5")
+    @Max(value = 5, message = "Star must be between 1 and 5")
     private Integer star;
 
     public Long getId() {
