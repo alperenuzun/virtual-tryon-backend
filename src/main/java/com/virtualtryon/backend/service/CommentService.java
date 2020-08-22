@@ -1,5 +1,6 @@
 package com.virtualtryon.backend.service;
 
+import com.virtualtryon.backend.exception.BadRequestException;
 import com.virtualtryon.backend.model.Comment;
 import com.virtualtryon.backend.model.Product;
 import com.virtualtryon.backend.model.User;
@@ -35,6 +36,9 @@ public class CommentService {
     public ResponseEntity<ApiResponse> addComment(UserPrincipal currentUser, CommentAddRequest commentAddRequest){
         Optional<User> user = userRepository.findById(currentUser.getId());
         Optional<Product> product = productRepository.findById(commentAddRequest.getProductId());
+
+        if(!user.isPresent()) throw new BadRequestException("User couldn't be found!");
+        if(!product.isPresent()) throw new BadRequestException("Product couldn't be found!");
 
         Instant now = Instant.now();
         String datetime = now.toString();

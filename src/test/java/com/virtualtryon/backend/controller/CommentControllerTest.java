@@ -1,19 +1,25 @@
 package com.virtualtryon.backend.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.virtualtryon.backend.exception.AppException;
 import com.virtualtryon.backend.model.Comment;
+import com.virtualtryon.backend.model.Product;
+import com.virtualtryon.backend.model.User;
 import com.virtualtryon.backend.payload.ApiResponse;
 import com.virtualtryon.backend.payload.CommentAddRequest;
 import com.virtualtryon.backend.payload.JwtAuthenticationResponse;
 import com.virtualtryon.backend.payload.LoginRequest;
 import com.virtualtryon.backend.service.CommentService;
+import com.virtualtryon.backend.util.TestUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -22,6 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +51,7 @@ class CommentControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
+    @MockBean
     private CommentService commentService;
 
     @BeforeEach
@@ -57,7 +64,10 @@ class CommentControllerTest {
         //given
         long productId = 1L;
 
-        ResponseEntity<List<Comment>> response = testRestTemplate.exchange(baseUrl + "/" + productId, HttpMethod.GET, null, new ParameterizedTypeReference<List<Comment>>() {});
+        //when
+        ResponseEntity<List<Comment>> response = getComments(baseUrl + "/" + productId);
+
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -66,54 +76,75 @@ class CommentControllerTest {
         //given
         String productId = "testId";
 
-        ResponseEntity<Object> response = testRestTemplate.exchange(baseUrl + "/" + productId, HttpMethod.GET, null, new ParameterizedTypeReference<Object>() {});
+        //when
+        ResponseEntity<Object> response = getComments(baseUrl + "/" + productId);
+
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void addComment_whenIsValidInputAndUserIsAuthorized_receiveOk() throws NoSuchFieldException {
-        CommentAddRequest commentAddRequest = new CommentAddRequest();
-        commentAddRequest.setProductId(1L);
-        commentAddRequest.setComment("unit test comment!");
-        commentAddRequest.setStar(3);
+    public void getComment_whenIsValidInput_receiveResults() throws JsonProcessingException {
+        //given
+        long productId = 1L;
 
-        String token = getToken("alperenuzun","123456");
+        Comment comment = TestUtil.createValidComment(productId);
+        Mockito.when(commentService.getComments(productId))
+                .thenReturn(Arrays.asList(comment));
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization","Bearer "+token);
-        headers.set("Content-Type","application/json");
+        //when
+        //TODO: check why it doesn't work with getComments function!
+        ResponseEntity<String> response = testRestTemplate.exchange(baseUrl + "/" + productId, HttpMethod.GET, null, new ParameterizedTypeReference<String>() {});
 
-        HttpEntity<CommentAddRequest> request = new HttpEntity<>(commentAddRequest,headers);
+        //then
+        String responseBody = response.getBody();
+        Mockito.verify(commentService, Mockito.times(1)).getComments(productId);
+        assertThat(objectMapper.writeValueAsString(Arrays.asList(comment)))
+                .isEqualToIgnoringWhitespace(responseBody);
+    }
 
+    @Test
+    public void addComment_whenIsValidInputAndUserIsAuthorized_receiveOk() {
+        //given
+        CommentAddRequest commentAddRequest = TestUtil.createValidAddRequest();
+
+        //when
+        String token = getAuthToken();
+        HttpEntity<CommentAddRequest> request = TestUtil.getHttpEntityByToken(token,commentAddRequest);
+
+        //then
         ResponseEntity<ApiResponse> response = testRestTemplate.postForEntity(baseUrl, request, ApiResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
     void addComment_whenIsValidInputAndUserIsUnauthorized_receiveUnauthorized() {
-        CommentAddRequest commentAddRequest = new CommentAddRequest();
-        commentAddRequest.setProductId(1L);
-        commentAddRequest.setComment("unit test comment!");
-        commentAddRequest.setStar(3);
+        //given
+        CommentAddRequest commentAddRequest = TestUtil.createValidAddRequest();
 
+        //when
         ResponseEntity<Object> response = testRestTemplate.postForEntity(baseUrl,commentAddRequest, Object.class);
+
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    private String getToken(String username, String password) {
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsernameOrEmail(username);
-        loginRequest.setPassword(password);
+    private String getAuthToken() {
+        LoginRequest loginRequest = TestUtil.getLoginRequest();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type","application/json");
+        headers.set(HttpHeaders.CONTENT_TYPE,CONTENT_TYPE);
 
         HttpEntity<LoginRequest> request = new HttpEntity<>(loginRequest,headers);
 
         ResponseEntity<LinkedHashMap> response = testRestTemplate.postForEntity(authUrl, request, LinkedHashMap.class);
         LinkedHashMap linkedHashMap = response.getBody();
         assert linkedHashMap != null;
-        String token = (String) linkedHashMap.get("accessToken");
-        return token;
+        return (String) linkedHashMap.get("accessToken");
     }
+
+    public <T> ResponseEntity<T> getComments(String url){
+        return testRestTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<T>() {});
+    }
+
 }
