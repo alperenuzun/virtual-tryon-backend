@@ -18,28 +18,25 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
     private ProductService productService;
 
     @PostMapping("/filter")
-    public ResponseEntity getFilteredProducts(@Valid @RequestBody ProductsRequest productsRequest) {
-        return productService.getFilteredProducts(productsRequest);
+    public ResponseEntity<List<Product>> getFilteredProducts(@Valid @RequestBody ProductsRequest productsRequest) {
+        return ResponseEntity.ok(productService.getFilteredProducts(productsRequest));
     }
 
     @GetMapping
-    public ResponseEntity getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<Product>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @GetMapping("/{pId}")
-    public ResponseEntity getProductDetail(@PathVariable(name = "pId") Long productId) {
-        return productService.getProductDetail(productId);
+    public ResponseEntity<Product> getProductDetail(@PathVariable(name = "pId") Long productId) {
+        return ResponseEntity.ok(productService.getProductDetail(productId));
     }
 
     @GetMapping("/recommendation/{pId}")
-    public ResponseEntity getRecommendations(@PathVariable(name = "pId") Long productId) {
-        return productService.getRecommendations(productId);
+    public ResponseEntity<List<Product>> getRecommendations(@PathVariable(name = "pId") Long productId) {
+        return ResponseEntity.ok(productService.getRecommendations(productId));
     }
 }

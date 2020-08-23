@@ -36,7 +36,7 @@ public class Product {
     private Integer gender;
 
     @NotBlank
-    private BigDecimal price;
+    private Double price;
 
     private Integer discount;
 
@@ -131,11 +131,11 @@ public class Product {
         this.gender = gender;
     }
 
-    public BigDecimal getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 

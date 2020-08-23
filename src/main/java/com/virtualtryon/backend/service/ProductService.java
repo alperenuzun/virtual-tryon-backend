@@ -1,5 +1,6 @@
 package com.virtualtryon.backend.service;
 
+import com.virtualtryon.backend.exception.BadRequestException;
 import com.virtualtryon.backend.model.Product;
 import com.virtualtryon.backend.payload.ProductsRequest;
 import com.virtualtryon.backend.repository.ProductRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -16,26 +18,28 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    public ResponseEntity getFilteredProducts(ProductsRequest productsRequest){
+    public List<Product> getFilteredProducts(ProductsRequest productsRequest){
         List<Product> products = productRepository.findByGenderAndBrandInAndColorIn(productsRequest.getGender(), productsRequest.getBrand(), productsRequest.getColor());
-        return ResponseEntity.ok(products);
+        return products;
     }
 
-    public ResponseEntity getAllProducts(){
-        return ResponseEntity.ok(productRepository.findAll());
+    public List<Product> getAllProducts(){
+        return productRepository.findAll();
     }
 
-    public ResponseEntity getProductDetail(Long productId){
-        return ResponseEntity.ok(productRepository.findById(productId));
+    public Product getProductDetail(Long productId){
+        Optional<Product> product = productRepository.findById(productId);
+        if(!product.isPresent()) throw new BadRequestException("The productId could not be found!");
+        return product.get();
     }
 
-    public ResponseEntity getRecommendations(Long productId){
+    public List<Product> getRecommendations(Long productId){
         // TODO: Read all the Id of products from the python file.
         List<Long> productIds = new ArrayList<>();
         productIds.add(3l);
         productIds.add(2l);
         productIds.add(productId);
-        return ResponseEntity.ok(productRepository.findByIdIn(productIds));
+        return productRepository.findByIdIn(productIds);
     }
 
 }
