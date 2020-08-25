@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public class ProductsRequest {
-    @Max(2)
+    @Max(value = 2, message = "Gender value should be either 1 or 2!")
     private Integer gender;
 
     @NotNull

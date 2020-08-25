@@ -11,6 +11,7 @@ public class TestUtil {
     private final static String CONTENT_TYPE = "application/json";
     private final static String username = "alperenuzun";
     private final static String password = "123456";
+    private static Integer idxForCreateProduct = 1;
 
     public static LoginRequest getLoginRequest(){
         LoginRequest loginRequest = new LoginRequest();
@@ -20,7 +21,7 @@ public class TestUtil {
     }
 
     public static Product createProduct(Long id){
-        Brand brand1 = createBrand();
+        Brand brand = createBrand();
         Form form = createProductForm();
         Color color = createColor();
 
@@ -31,21 +32,24 @@ public class TestUtil {
         product.setDescription("p1desc");
         product.setObjName("p1obj");
         product.setImg("p1img");
-        product.setBrand(brand1);
+        product.setBrand(brand);
         product.setProductCode("P1CODE");
-        product.setGender(1);
+        product.setGender((idxForCreateProduct % 2 == 0) ? 1 : 2);
         product.setPrice(320.0);
         product.setDiscount(0);
         product.setModelNo(123);
         product.setForm(form);
         product.setColor(color);
+
+        idxForCreateProduct = (idxForCreateProduct == 3) ? 1 : ++idxForCreateProduct;
+
         return  product;
     }
 
     public static Color createColor(){
         Color color = new Color();
-        color.setId(1L);
-        color.setColor("black");
+        color.setId((idxForCreateProduct % 2 == 0) ? 1L : 2L);
+        color.setColor((idxForCreateProduct % 2 == 0) ? "black" : "blue");
         return color;
     }
 
@@ -58,7 +62,7 @@ public class TestUtil {
 
     public static Brand createBrand(){
         Brand brand = new Brand();
-        brand.setId(1L);
+        brand.setId((idxForCreateProduct % 2 == 0) ? 1L : 2L);
         brand.setBrandName("BrandTest");
         brand.setImportance(1);
         return brand;
@@ -90,7 +94,7 @@ public class TestUtil {
         commentAddRequest.setProductId(1L);
         commentAddRequest.setComment("unit test comment!");
         commentAddRequest.setStar(3);
-        return  commentAddRequest;
+        return commentAddRequest;
     }
 
     public static <T> HttpEntity<T> getHttpEntityByToken(String token, T commentAddRequest){

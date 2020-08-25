@@ -19,8 +19,7 @@ public class ProductService {
     private ProductRepository productRepository;
 
     public List<Product> getFilteredProducts(ProductsRequest productsRequest){
-        List<Product> products = productRepository.findByGenderAndBrandInAndColorIn(productsRequest.getGender(), productsRequest.getBrand(), productsRequest.getColor());
-        return products;
+        return productRepository.findByGenderAndBrandInAndColorIn(productsRequest.getGender(), productsRequest.getBrand(), productsRequest.getColor());
     }
 
     public List<Product> getAllProducts(){
@@ -36,8 +35,8 @@ public class ProductService {
     public List<Product> getRecommendations(Long productId){
         // TODO: Read all the Id of products from the python file.
         List<Long> productIds = new ArrayList<>();
-        productIds.add(3l);
-        productIds.add(2l);
+        productIds.add(3L);
+        productIds.add(2L);
         productIds.add(productId);
         return productRepository.findByIdIn(productIds);
     }
