@@ -33,7 +33,7 @@ public class SalesService {
     @Autowired
     private SalesDetailRepository salesDetailRepository;
     
-    public ResponseEntity<ApiResponse> addSales(UserPrincipal currentUser, SaleAddRequest saleAddRequest){
+    public ApiResponse addSales(Long userId, SaleAddRequest saleAddRequest){
         try{
             List<SaleRequest> shoppingCart = saleAddRequest.getSalesList();
             Integer totalCount = 0;
@@ -46,7 +46,7 @@ public class SalesService {
                 couponCode = saleRequest.getCouponCode();
             }
 
-            Optional<User> user = userRepository.findById(currentUser.getId());
+            Optional<User> user = userRepository.findById(userId);
             Optional<Coupon> coupon = couponRepository.findByCouponCode(couponCode);
 
             Instant now = Instant.now();
@@ -78,15 +78,15 @@ public class SalesService {
 
             salesDetailRepository.saveAll(salesDetails);
         }catch (Exception e){
-            return ResponseEntity.ok(new ApiResponse(false, "Unable to add"));
+            return new ApiResponse(false, "Unable to add");
         }
 
-        return ResponseEntity.ok(new ApiResponse(true, "Successfully added"));
+        return new ApiResponse(true, "Successfully added");
     }
 
-    public ResponseEntity<ApiResponse> addCoupon(UserPrincipal currentUser, String code){
+    public ApiResponse addCoupon(Long userId, String code){
         try{
-            Optional<User> user = userRepository.findById(currentUser.getId());
+            Optional<User> user = userRepository.findById(userId);
             Optional<Coupon> coupon = couponRepository.findByCouponCode(code);
 
             UserCoupon userCoupon = new UserCoupon();
@@ -95,26 +95,26 @@ public class SalesService {
 
             userCouponRepository.save(userCoupon);
 
-            salesRepository.findByUserId(currentUser.getId()).stream().map(sale -> {
+            salesRepository.findByUserId(userId).stream().map(sale -> {
                 sale.setAds(0);
                 return salesRepository.save(sale);
             });
         }catch (Exception e){
-            return ResponseEntity.ok(new ApiResponse(false, "Unable to add"));
+            return new ApiResponse(false, "Unable to add");
         }
 
-        return ResponseEntity.ok(new ApiResponse(true, "Successfully added"));
+        return new ApiResponse(true, "Successfully added");
     }
 
-    public ResponseEntity<CheckCouponResponse> checkCoupons(UserPrincipal currentUser, String code){
+    public CheckCouponResponse checkCoupons(Long userId, String code){
         CheckCouponResponse checkCouponResponse = new CheckCouponResponse();
         try{
             Boolean couponExists = couponRepository.existsByCouponCode(code);
-            Integer checkUnUsed = userCouponRepository.countByUserAndCouponAndUsed(currentUser.getId(), code);
+            Integer checkUnUsed = userCouponRepository.countByUserAndCouponAndUsed(userId, code);
 
             if(couponExists && checkUnUsed > 0){
                 Integer discount = couponRepository.getDiscountByCouponCode(code);
-                userCouponRepository.findByUserAndCoupon(currentUser.getId(), code)
+                userCouponRepository.findByUserAndCoupon(userId, code)
                         .stream().map(userCoupon -> {
                             userCoupon.setUsed(1);
                             return userCouponRepository.save(userCoupon);
@@ -125,19 +125,19 @@ public class SalesService {
                 checkCouponResponse.setSuccess(true);
             }
         }catch (Exception e){
-            return ResponseEntity.ok(checkCouponResponse);
+            return checkCouponResponse;
         }
 
-        return ResponseEntity.ok(checkCouponResponse);
+        return checkCouponResponse;
     }
 
-    public ResponseEntity<CouponResponse> getCoupons(UserPrincipal currentUser){
+    public CouponResponse getCoupons(Long userId){
         Integer[] stages = new Integer[]{0,1,3,5,8,9,10};
         CouponResponse couponResponse = new CouponResponse();
         Boolean ads = salesRepository.existsByAds(1);
 
         if(ads){
-            Long sales = salesRepository.countByUser(currentUser.getId());
+            Long sales = salesRepository.countByUser(userId);
 
             if(sales > 0)
                 couponResponse.setShow(true);
@@ -154,7 +154,7 @@ public class SalesService {
             couponResponse.setCoupon(coupon);
         }
 
-        return ResponseEntity.ok(couponResponse);
+        return couponResponse;
     }
 
 }
