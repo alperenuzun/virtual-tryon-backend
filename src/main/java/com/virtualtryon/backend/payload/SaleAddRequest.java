@@ -14,4 +14,8 @@ public class SaleAddRequest {
     public List<SaleRequest> getSalesList() {
         return salesList;
     }
+
+    public void setSalesList(List<SaleRequest> salesList) {
+        this.salesList = salesList;
+    }
 }

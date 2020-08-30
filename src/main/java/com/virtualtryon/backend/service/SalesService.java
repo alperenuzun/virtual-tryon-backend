@@ -49,6 +49,9 @@ public class SalesService {
             Optional<User> user = userRepository.findById(userId);
             Optional<Coupon> coupon = couponRepository.findByCouponCode(couponCode);
 
+            if(!couponCode.equals("") && !coupon.isPresent())
+                return new ApiResponse(false, "Unable to add");
+
             Instant now = Instant.now();
             String datetime = now.toString();
             datetime = datetime.substring(0,datetime.length()-5).replace("T"," ");
@@ -88,6 +91,9 @@ public class SalesService {
         try{
             Optional<User> user = userRepository.findById(userId);
             Optional<Coupon> coupon = couponRepository.findByCouponCode(code);
+
+            if(!coupon.isPresent())
+                return new ApiResponse(false, "Unable to add");
 
             UserCoupon userCoupon = new UserCoupon();
             userCoupon.setUser(user.get());

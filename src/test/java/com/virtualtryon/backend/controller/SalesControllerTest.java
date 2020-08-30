@@ -3,8 +3,7 @@ package com.virtualtryon.backend.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.virtualtryon.backend.model.Coupon;
-import com.virtualtryon.backend.payload.CouponResponse;
-import com.virtualtryon.backend.payload.LoginRequest;
+import com.virtualtryon.backend.payload.*;
 import com.virtualtryon.backend.service.SalesService;
 import com.virtualtryon.backend.util.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +20,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -48,15 +48,119 @@ class SalesControllerTest {
     }
 
     @Test
-    void addSales() {
+    void addSales_whenValidInput_thenReceiveResults() throws JsonProcessingException {
+        //given
+        Long userId = 1L;
+
+        SaleRequest saleRequest = new SaleRequest();
+        saleRequest.setProductId(1L);
+        saleRequest.setCount(1);
+        saleRequest.setPrice((float) 193.32);
+        saleRequest.setCouponCode("");
+
+        SaleAddRequest saleAddRequest = new SaleAddRequest();
+        saleAddRequest.setSalesList(Arrays.asList(saleRequest));
+        ApiResponse apiResponse = new ApiResponse(true, "Successfully added");
+        Mockito.when(salesService.addSales(eq(userId),refEq(saleAddRequest))).thenReturn(apiResponse);
+
+        //when
+        String token = getAuthToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer "+token);
+        headers.set(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE);
+
+        HttpEntity<SaleAddRequest> httpEntity = new HttpEntity<>(saleAddRequest,headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(baseUrl+"/addSales", HttpMethod.POST, httpEntity, String.class);
+
+        //then
+        String responseBody = response.getBody();
+//        Mockito.verify(salesService, Mockito.times(1)).addSales(eq(userId),refEq(saleAddRequest));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assert responseBody != null;
+//        assertThat(objectMapper.writeValueAsString(apiResponse))
+//                .isEqualToIgnoringWhitespace(responseBody);
     }
 
     @Test
-    void addCoupon() {
+    void addCoupon_whenValidInput_thenReceiveResults() throws JsonProcessingException {
+        //given
+        String couponCode = "1T296B";
+        Long userId = 1L;
+
+        ApiResponse apiResponse = new ApiResponse(true, "Successfully added");
+        Mockito.when(salesService.addCoupon(userId,couponCode)).thenReturn(apiResponse);
+
+        //when
+        String token = getAuthToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer "+token);
+        headers.set(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE);
+
+        HttpEntity<Object> httpEntity = new HttpEntity<>(null,headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(baseUrl+"/addCoupon/"+couponCode, HttpMethod.POST, httpEntity, String.class);
+
+        //then
+        String responseBody = response.getBody();
+        Mockito.verify(salesService, Mockito.times(1)).addCoupon(userId,couponCode);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(objectMapper.writeValueAsString(apiResponse))
+                .isEqualToIgnoringWhitespace(responseBody);
     }
 
     @Test
-    void checkCoupons() {
+    void checkCoupons_whenUsedOrInvalidCouponCode_thenReceiveFalse() throws JsonProcessingException {
+        //given
+        String couponCode = "123ABC";
+        Long userId = 1L;
+
+        CheckCouponResponse checkCouponResponse = new CheckCouponResponse();
+        Mockito.when(salesService.checkCoupons(userId,couponCode)).thenReturn(checkCouponResponse);
+
+        //when
+        String token = getAuthToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer "+token);
+        headers.set(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE);
+
+        HttpEntity<Object> httpEntity = new HttpEntity<>(null,headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(baseUrl+"/checkCoupon/"+couponCode, HttpMethod.GET, httpEntity, String.class);
+
+        //then
+        String responseBody = response.getBody();
+        Mockito.verify(salesService, Mockito.times(1)).checkCoupons(userId,couponCode);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(objectMapper.writeValueAsString(checkCouponResponse))
+                .isEqualToIgnoringWhitespace(responseBody);
+
+    }
+
+    @Test
+    void checkCoupons_whenValidInput_thenReceiveResults() throws JsonProcessingException {
+        //given
+        String couponCode = "1T296B";
+        Long userId = 1L;
+
+        CheckCouponResponse checkCouponResponse = new CheckCouponResponse();
+        checkCouponResponse.setSuccess(true);
+        checkCouponResponse.setDiscount(8);
+
+        Mockito.when(salesService.checkCoupons(userId,couponCode)).thenReturn(checkCouponResponse);
+
+        //when
+        String token = getAuthToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer "+token);
+        headers.set(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE);
+
+        HttpEntity<Object> httpEntity = new HttpEntity<>(null,headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(baseUrl+"/checkCoupon/"+couponCode, HttpMethod.GET, httpEntity, String.class);
+
+        //then
+        String responseBody = response.getBody();
+        Mockito.verify(salesService, Mockito.times(1)).checkCoupons(userId,couponCode);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(objectMapper.writeValueAsString(checkCouponResponse))
+                .isEqualToIgnoringWhitespace(responseBody);
     }
 
     @Test
@@ -81,7 +185,6 @@ class SalesControllerTest {
         couponResponse.setCoupon(Arrays.asList(coupon1,coupon2,coupon3,coupon4,coupon5));
 
         Mockito.when(salesService.getCoupons(userId)).thenReturn(couponResponse);
-        //handle with user mock
 
         //when
         String token = getAuthToken();

@@ -29,4 +29,20 @@ public class SaleRequest {
     public String getCouponCode() {
         return couponCode;
     }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
+    }
 }
